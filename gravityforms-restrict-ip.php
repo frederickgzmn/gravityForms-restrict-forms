@@ -33,16 +33,24 @@ function GFRestrictIPActivation() {
 
 	$gfrestrictip_table_name  = $wpdb->prefix . GFREIP_TABLE_NAME;
 
-	$wpdb->query( "
-		CREATE TABLE IF NOT EXISTS {$gfrestrictip_table_name} (
-		id INT(255) NOT NULL AUTO_INCREMENT,
-		ip VARCHAR(255) NOT NULL, 
-		count INT(255) NOT NULL,
-		day_date DATE NULL,
-		PRIMARY KEY (id), 
-		UNIQUE gfrestrictip (ip)
-		) $charset_collate;
-	" );
+	$query = $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table_name ) );
+
+	if ( $wpdb->get_var( $query ) != $gfrestrictip_table_name ) {
+		
+		$sql = "
+			CREATE TABLE {$gfrestrictip_table_name} (
+			id INT(255) NOT NULL AUTO_INCREMENT,
+			ip VARCHAR(255) NOT NULL, 
+			count INT(255) NOT NULL,
+			day_date DATE NULL,
+			PRIMARY KEY (id), 
+			UNIQUE gfrestrictip (ip)
+			) $charset_collate;
+		";
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		dbDelta( $sql );
+
+	}
 
 }
 register_activation_hook( __FILE__, 'GFRestrictIPActivation');
